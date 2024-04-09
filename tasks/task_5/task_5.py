@@ -9,7 +9,8 @@ from tasks.task_4.task_4 import EmbeddingClient
 # Import Task libraries
 from langchain_core.documents import Document
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores.chroma import Chroma
+# from langchain_community.vectorstores import Chroma
 
 class ChromaCollectionCreator:
     def __init__(self, processor, embed_model):
@@ -57,14 +58,26 @@ class ChromaCollectionCreator:
         # Use a TextSplitter from Langchain to split the documents into smaller text chunks
         # https://python.langchain.com/docs/modules/data_connection/document_transformers/character_text_splitter
         # [Your code here for splitting documents]
-        
-        if texts is not None:
-            st.success(f"Successfully split pages to {len(texts)} documents!", icon="✅")
+        print("Task 5!")
+        print(type(self.processor.pages))
+        # text_splitter = CharacterTextSplitter(
+        #                     chunk_size=200,
+        #                     chunk_overlap=0,
+        #                 )
+        # texts = text_splitter.create_documents([self.processor.pages[0]])
+        # print(self.processor.pages[0])               
+        if self.processor.pages is not None:
+            st.success(f"Successfully split pages to {len(self.processor.pages)} documents!", icon="✅")
 
         # Step 3: Create the Chroma Collection
         # https://docs.trychroma.com/
         # Create a Chroma in-memory client using the text chunks and the embeddings model
         # [Your code here for creating Chroma collection]
+        # db = chroma.chromadb.
+        
+        # chroma_client = chroma.chromadb.Client()
+        # self.db = chroma_client.create_collection(name="Chroma Collection!",embedding_function=self.embed_model, data_loader=texts)
+        self.db = Chroma.from_documents(self.processor.pages, self.embed_model)
         
         if self.db:
             st.success("Successfully created Chroma Collection!", icon="✅")
@@ -93,8 +106,8 @@ if __name__ == "__main__":
     
     embed_config = {
         "model_name": "textembedding-gecko@003",
-        "project": "YOUR PROJECT ID HERE",
-        "location": "us-central1"
+        "project": "sample-mission-418903",
+        "location": "us-east1"
     }
     
     embed_client = EmbeddingClient(**embed_config) # Initialize from Task 4

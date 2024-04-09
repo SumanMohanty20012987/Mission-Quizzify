@@ -2,6 +2,8 @@
 
 from langchain_google_vertexai import VertexAIEmbeddings
 
+import streamlit as st
+
 class EmbeddingClient:
     """
     Task: Initialize the EmbeddingClient class to connect to Google Cloud's VertexAI for text embeddings.
@@ -33,9 +35,10 @@ class EmbeddingClient:
         # Initialize the VertexAIEmbeddings client with the given parameters
         # Read about the VertexAIEmbeddings wrapper from Langchain here
         # https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
-        self.client = VertexAIEmbeddings(
-            #### YOUR CODE HERE ####
-        )
+        self.model = model_name,
+        self.project = project,
+        self.location = location,
+        self.client = VertexAIEmbeddings(model_name, project, location)
         
     def embed_query(self, query):
         """
@@ -59,14 +62,23 @@ class EmbeddingClient:
         except AttributeError:
             print("Method embed_documents not defined for the client.")
             return None
+    def __call__(self, input):
+        return self.client.embed_documents(input)
+        
+# model_name = "textembedding-gecko@003" 
+# project = "sample-mission-418903"
+# location = "us-east1"
+# embedding_client = EmbeddingClient(model_name, project, location)
 
 if __name__ == "__main__":
     model_name = "textembedding-gecko@003"
-    project = "YOUR PROJECT ID HERE"
-    location = "us-central1"
+    project = "sample-mission-418903"
+    location = "us-east1"
 
     embedding_client = EmbeddingClient(model_name, project, location)
     vectors = embedding_client.embed_query("Hello World!")
     if vectors:
         print(vectors)
+        st.write("Embedding for 'Hello World':")
+        st.write(vectors)
         print("Successfully used the embedding client!")

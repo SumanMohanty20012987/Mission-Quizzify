@@ -6,7 +6,7 @@ from tasks.task_3.task_3 import DocumentProcessor
 from tasks.task_4.task_4 import EmbeddingClient
 from tasks.task_5.task_5 import ChromaCollectionCreator
 
-f"""
+"""
 Task: Build a Quiz Builder with Streamlit and LangChain
 
 Overview:
@@ -71,6 +71,7 @@ if __name__ == "__main__":
             
             submitted = st.form_submit_button("Generate a Quiz!")
             if submitted:
+                pass
                 ####### YOUR CODE HERE #######
                 # 5) Use the create_chroma_collection() method to create a Chroma collection from the processed documents
                 ####### YOUR CODE HERE #######
@@ -78,8 +79,8 @@ if __name__ == "__main__":
                 # Uncomment the following lines to test the query_chroma_collection() method
                 # document = chroma_creator.query_chroma_collection(topic_input) 
                 
-    if document:
-        screen.empty() # Screen 2
-        with st.container():
-            st.header("Query Chroma for Topic, top Document: ")
-            st.write(document)
+            if document:
+                screen.empty() # Screen 2
+                with st.container():
+                    st.header("Query Chroma for Topic, top Document: ")
+                    st.write(document)
