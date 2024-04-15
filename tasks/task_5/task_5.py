@@ -4,6 +4,7 @@ import streamlit as st
 sys.path.append(os.path.abspath('../../'))
 from tasks.task_3.task_3 import DocumentProcessor
 from tasks.task_4.task_4 import EmbeddingClient
+from tasks.config import embed_config
 
 
 # Import Task libraries
@@ -60,13 +61,13 @@ class ChromaCollectionCreator:
         # [Your code here for splitting documents]
         print("Task 5!")
         print(type(self.processor.pages))
-        # text_splitter = CharacterTextSplitter(
-        #                     chunk_size=200,
-        #                     chunk_overlap=0,
-        #                 )
-        # texts = text_splitter.create_documents([self.processor.pages[0]])
+        text_splitter = CharacterTextSplitter(
+                            chunk_size=200,
+                            chunk_overlap=0,
+                        )
+        texts = text_splitter.split_documents(self.processor.pages)
         # print(self.processor.pages[0])               
-        if self.processor.pages is not None:
+        if texts is not None:
             st.success(f"Successfully split pages to {len(self.processor.pages)} documents!", icon="✅")
 
         # Step 3: Create the Chroma Collection
@@ -77,12 +78,15 @@ class ChromaCollectionCreator:
         
         # chroma_client = chroma.chromadb.Client()
         # self.db = chroma_client.create_collection(name="Chroma Collection!",embedding_function=self.embed_model, data_loader=texts)
-        self.db = Chroma.from_documents(self.processor.pages, self.embed_model)
+        self.db = Chroma.from_documents(texts, self.embed_model)
         
         if self.db:
             st.success("Successfully created Chroma Collection!", icon="✅")
+            return self.db
         else:
             st.error("Failed to create Chroma Collection!", icon="🚨")
+        
+        
     
     def query_chroma_collection(self, query) -> Document:
         """
@@ -94,7 +98,7 @@ class ChromaCollectionCreator:
         if self.db:
             docs = self.db.similarity_search_with_relevance_scores(query)
             if docs:
-                return docs[0]
+                return docs[0] #Top Document
             else:
                 st.error("No matching documents found!", icon="🚨")
         else:
@@ -104,15 +108,16 @@ if __name__ == "__main__":
     processor = DocumentProcessor() # Initialize from Task 3
     processor.ingest_documents()
     
-    embed_config = {
-        "model_name": "textembedding-gecko@003",
-        "project": "sample-mission-418903",
-        "location": "us-east1"
-    }
+    # embed_config = {
+    #     "model_name": "textembedding-gecko@003",
+    #     "project": "sample-mission-418903",
+    #     "location": "us-east1"
+    # }
     
     embed_client = EmbeddingClient(**embed_config) # Initialize from Task 4
     
     chroma_creator = ChromaCollectionCreator(processor, embed_client)
+    
     
     with st.form("Load Data to Chroma"):
         st.write("Select PDFs for Ingestion, then click Submit")

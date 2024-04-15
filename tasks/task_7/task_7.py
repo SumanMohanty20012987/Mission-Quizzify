@@ -3,7 +3,13 @@ from langchain_google_vertexai import VertexAI
 from langchain_core.prompts import PromptTemplate
 import os
 import sys
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel
+from langchain_core.output_parsers import StrOutputParser
 sys.path.append(os.path.abspath('../../'))
+from tasks.task_3.task_3 import DocumentProcessor
+from tasks.task_4.task_4 import EmbeddingClient
+from tasks.task_5.task_5 import ChromaCollectionCreator
+from tasks.config import embed_config
 
 class QuizGenerator:
     def __init__(self, topic=None, num_questions=1, vectorstore=None):
@@ -23,8 +29,12 @@ class QuizGenerator:
         if num_questions > 10:
             raise ValueError("Number of questions cannot exceed 10.")
         self.num_questions = num_questions
+        
+        ## Adding a check for vectoreStore
+        if not vectorstore:
+            raise ValueError("Provide a valid Vector store!")
+        self.vectorstore = vectorstore.db
 
-        self.vectorstore = vectorstore
         self.llm = None
         self.system_template = """
             You are a subject matter expert on the topic: {topic}
@@ -70,9 +80,7 @@ class QuizGenerator:
 
         Note: Ensure you have appropriate access or API keys if required by the model or platform.
         """
-        self.llm = VertexAI(
-            ############# YOUR CODE HERE ############
-        )
+        self.llm = VertexAI(model_name="gemini-pro", temperature=0.3, max_output_tokens=2048)
         
     def generate_question_with_vectorstore(self):
         """
@@ -101,49 +109,44 @@ class QuizGenerator:
         """
         ############# YOUR CODE HERE ############
         # Initialize the LLM from the 'init_llm' method if not already initialized
-        # Raise an error if the vectorstore is not initialized on the class
-        ############# YOUR CODE HERE ############
-        
-        from langchain_core.runnables import RunnablePassthrough, RunnableParallel
+        self.init_llm()
+        # Raise an error if the vectorstore is not initialized on the class - added this check inside the init function
+        try:
+            if not self.llm:
+                raise ValueError("LLM must be initialized")
 
-        ############# YOUR CODE HERE ############
-        # Enable a Retriever using the as_retriever() method on the VectorStore object
-        # HINT: Use the vectorstore as the retriever initialized on the class
-        ############# YOUR CODE HERE ############
-        
-        ############# YOUR CODE HERE ############
-        # Use the system template to create a PromptTemplate
-        # HINT: Use the .from_template method on the PromptTemplate class and pass in the system template
-        ############# YOUR CODE HERE ############
-        
-        # RunnableParallel allows Retriever to get relevant documents
-        # RunnablePassthrough allows chain.invoke to send self.topic to LLM
-        setup_and_retrieval = RunnableParallel(
-            {"context": retriever, "topic": RunnablePassthrough()}
-        )
-        
-        ############# YOUR CODE HERE ############
-        # Create a chain with the Retriever, PromptTemplate, and LLM
-        # HINT: chain = RETRIEVER | PROMPT | LLM 
-        ############# YOUR CODE HERE ############
+            #2. Retrieve relevant documents or context for the quiz topic from the vectorstore.
+            retriever = self.vectorstore.as_retriever()
 
-        # Invoke the chain with the topic as input
-        response = chain.invoke(self.topic)
-        return response
+
+            #3. Format the retrieved context and the quiz topic into a structured prompt using the system template.
+            prompt = PromptTemplate.from_template(self.system_template)
+            output_parser = StrOutputParser()
+            setup_and_retrieval = RunnableParallel(
+                                    {"context": retriever, "topic": RunnablePassthrough()}
+                                    )
+
+            #4. Invoke the LLM with the formatted prompt to generate a quiz question.
+            chain = setup_and_retrieval | prompt | self.llm | output_parser
+            response = chain.invoke(self.topic)
+            
+            #5. Return the generated question in the specified JSON structure.
+            return response
+            
+
+
+        except Exception as e:
+            print(f"There was an error in the code, Reason : {e}")
+
     
 # Test the Object
 if __name__ == "__main__":
     
-    from tasks.task_3.task_3 import DocumentProcessor
-    from tasks.task_4.task_4 import EmbeddingClient
-    from tasks.task_5.task_5 import ChromaCollectionCreator
-    
-    
-    embed_config = {
-        "model_name": "textembedding-gecko@003",
-        "project": "YOUR-PROJECT-ID-HERE",
-        "location": "us-central1"
-    }
+    # embed_config = {
+    #     "model_name": "textembedding-gecko@003",
+    #     "project": "YOUR-PROJECT-ID-HERE",
+    #     "location": "us-central1"
+    # }
     
     screen = st.empty()
     with screen.container():

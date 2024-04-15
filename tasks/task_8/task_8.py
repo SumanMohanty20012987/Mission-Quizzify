@@ -9,6 +9,7 @@ from tasks.task_5.task_5 import ChromaCollectionCreator
 
 from langchain_core.prompts import PromptTemplate
 from langchain_google_vertexai import VertexAI
+from tasks.config import embed_config
 
 class QuizGenerator:
     def __init__(self, topic=None, num_questions=1, vectorstore=None):
@@ -124,22 +125,20 @@ class QuizGenerator:
         self.question_bank = [] # Reset the question bank
 
         for _ in range(self.num_questions):
-            ##### YOUR CODE HERE #####
-            question_str = # Use class method to generate question
-            
-            ##### YOUR CODE HERE #####
+            question_str =  self.generate_question_with_vectorstore() # Use class method to generate question
+           
             try:
+                question = json.loads(question_str)
                 # Convert the JSON String to a dictionary
             except json.JSONDecodeError:
                 print("Failed to decode question JSON.")
                 continue  # Skip this iteration if JSON decoding fails
-            ##### YOUR CODE HERE #####
-
-            ##### YOUR CODE HERE #####
+            
             # Validate the question using the validate_question method
             if self.validate_question(question):
                 print("Successfully generated unique question")
                 # Add the valid and unique question to the bank
+                self.question_bank.append(question)
             else:
                 print("Duplicate or invalid question detected.")
             ##### YOUR CODE HERE #####
@@ -166,21 +165,13 @@ class QuizGenerator:
 
         Note: This method assumes `question` is a valid dictionary and `question_bank` has been properly initialized.
         """
-        ##### YOUR CODE HERE #####
-        # Consider missing 'question' key as invalid in the dict object
-        # Check if a question with the same text already exists in the self.question_bank
-        ##### YOUR CODE HERE #####
-        return is_unique
-
+        if "question" not in question.keys() or question["question"] in self.question_bank:
+            return False
+        
+        return True
 
 # Test Generating the Quiz
 if __name__ == "__main__":
-    
-    embed_config = {
-        "model_name": "textembedding-gecko@003",
-        "project": "YOUR-PROJECT-ID-HERE",
-        "location": "us-central1"
-    }
     
     screen = st.empty()
     with screen.container():
@@ -209,7 +200,7 @@ if __name__ == "__main__":
                 st.write(topic_input)
                 
                 # Test the Quiz Generator
-                generator = QuizGenerator(topic_input, questions, chroma_creator)
+                generator = QuizGenerator(topic_input, questions, chroma_creator.db) # Passing chroma_creater passes an instance instead pass chroma_creater.db
                 question_bank = generator.generate_quiz()
                 question = question_bank[0]
 

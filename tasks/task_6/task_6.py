@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath('../../'))
 from tasks.task_3.task_3 import DocumentProcessor
 from tasks.task_4.task_4 import EmbeddingClient
 from tasks.task_5.task_5 import ChromaCollectionCreator
+from tasks.config import embed_config
 
 # """
 # Task: Build a Quiz Builder with Streamlit and LangChain
@@ -76,7 +77,6 @@ if __name__ == "__main__":
 
             submitted = st.form_submit_button("Generate a Quiz!")
             if submitted:
-                pass
                 # 5) Use the create_chroma_collection() method to create a Chroma collection from the processed documents
                 chroma_creator.create_chroma_collection()
 

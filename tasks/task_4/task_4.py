@@ -3,6 +3,7 @@
 from langchain_google_vertexai import VertexAIEmbeddings
 
 import streamlit as st
+from tasks.config import embed_config
 
 class EmbeddingClient:
     """
@@ -74,8 +75,9 @@ if __name__ == "__main__":
     model_name = "textembedding-gecko@003"
     project = "sample-mission-418903"
     location = "us-east1"
+    embedding_client = EmbeddingClient(**embed_config) # Initialize from Task 4
 
-    embedding_client = EmbeddingClient(model_name, project, location)
+    # embedding_client = EmbeddingClient(model_name, project, location)
     vectors = embedding_client.embed_query("Hello World!")
     if vectors:
         print(vectors)
